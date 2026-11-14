@@ -23,7 +23,8 @@
 
   async function readBase() {
     try {
-      var stored = (await chrome.storage.local.get("alfredBaseUrl")).alfredBaseUrl;
+      var saved = await chrome.storage.local.get(["alfredBaseUrl", "polymathDefaultUrl"]);
+      var stored = saved.alfredBaseUrl || saved.polymathDefaultUrl;
       return typeof stored === "string" && stored ? stored.replace(/\/+$/, "") : DEFAULT_BASE;
     } catch {
       return DEFAULT_BASE;

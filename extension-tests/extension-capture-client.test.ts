@@ -103,6 +103,39 @@ describe("capture client", () => {
     await expect(api.base()).resolves.toBe("http://localhost:3000");
   });
 
+  it("uses the server the repo's .env names when nothing else is stored", async () => {
+    const api = await loadApi({
+      runtime: { id: "x", sendMessage: vi.fn() },
+      storage: storageStub({ polymathDefaultUrl: "https://polymath.example" }),
+    });
+    await expect(api.base()).resolves.toBe("https://polymath.example");
+  });
+
+  it("moves a stored copy of the built-in default to the configured server, once", async () => {
+    const values: Record<string, unknown> = {
+      alfredUrlMigrated_v2: true,
+      alfredBaseUrl: "http://localhost:3000",
+      polymathDefaultUrl: "https://polymath.example",
+    };
+    const api = await loadApi({ runtime: { id: "x", sendMessage: vi.fn() }, storage: storageStub(values) });
+    await expect(api.base()).resolves.toBe("https://polymath.example");
+    expect(values.alfredBaseUrl).toBeNull();
+  });
+
+  it("keeps localhost when it is chosen after the move", async () => {
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>(async () => new Response(null, { status: 401 })));
+    const api = await loadApi({
+      runtime: { id: "x", sendMessage: vi.fn() },
+      storage: storageStub({
+        alfredUrlMigrated_v2: true,
+        alfredUrlMigrated_v3: true,
+        alfredBaseUrl: "http://localhost:3000",
+        polymathDefaultUrl: "https://polymath.example",
+      }),
+    });
+    await expect(api.base()).resolves.toBe("http://localhost:3000");
+  });
+
   it("states the arrival mode and leaves the title free of a mode suffix", async () => {
     const sent: EnqueueMessage[] = [];
     const sendMessage = vi.fn((message: EnqueueMessage, callback: (value: unknown) => void) => {

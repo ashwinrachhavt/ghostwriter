@@ -405,7 +405,7 @@
     if (url) {
       await AlfredAPI.setBase(url);
     } else {
-      await AlfredAPI.setBase("http://localhost:3000");
+      await AlfredAPI.resetBase();
     }
     const token = $("#setting-api-token");
     try {

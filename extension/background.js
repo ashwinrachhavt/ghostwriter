@@ -23,6 +23,15 @@
 
 importScripts("outbox-core.js", "api.js", "focus-core.js", "focus-blocker.js");
 
+// The default server comes from the repo's .env by way of config.js, which
+// scripts/extension-config.mjs writes and git ignores. Only the worker loads
+// it, so a checkout without one still runs; every other page reads the value
+// back from storage (AlfredAPI.defaultBase).
+try {
+  importScripts("config.js");
+} catch {}
+chrome.storage.local.set({ polymathDefaultUrl: self.POLYMATH_DEFAULT_URL || null });
+
 var Outbox = self.AxiomOutbox;
 var AxiomFocus = self.AxiomFocus;
 var AxiomFocusBlocker = self.AxiomFocusBlocker;

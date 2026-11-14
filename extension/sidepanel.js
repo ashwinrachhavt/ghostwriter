@@ -20,8 +20,6 @@
   let decomposeLoaded = false;
   let streamingMsgEl = null;
 
-  const BASE_URL = 'http://localhost:3000';
-
   // ── DOM refs ─────────────────────────────────────────────────────────
 
   const $ = (sel) => document.querySelector(sel);
@@ -233,7 +231,7 @@
     showSkeleton(container);
 
     try {
-      const resp = await fetch(BASE_URL + '/api/reading/companion', {
+      const resp = await fetch((await AlfredAPI.base()) + '/api/reading/companion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -314,7 +312,7 @@
     showSkeleton(container);
 
     try {
-      const resp = await fetch(BASE_URL + '/api/reading/companion', {
+      const resp = await fetch((await AlfredAPI.base()) + '/api/reading/companion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -431,7 +429,7 @@
     let gotDoneMarker = false;
 
     try {
-      const resp = await fetch(BASE_URL + '/api/reading/companion', {
+      const resp = await fetch((await AlfredAPI.base()) + '/api/reading/companion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -586,7 +584,7 @@
 
   async function saveAsZettel(content, sourceUrl) {
     try {
-      const resp = await fetch(BASE_URL + '/api/zettels/cards', {
+      const resp = await fetch((await AlfredAPI.base()) + '/api/zettels/cards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

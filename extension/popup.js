@@ -271,7 +271,7 @@
     if (url) {
       await AlfredAPI.setBase(url);
     } else {
-      await AlfredAPI.setBase("http://localhost:3000");
+      await AlfredAPI.resetBase();
       $("#api-url-input").value = "";
     }
     try {

@@ -172,7 +172,19 @@ const ENQUEUE_REPLY_DEADLINE_MS = 30000;
 
 const AlfredAPI = {
   _baseUrl: null,
+  /** Where captures go when neither the person nor the repo's .env names a server. */
   _defaultUrl: "http://localhost:3000",
+  /**
+   * The default server: the one the repo's .env names (the service worker
+   * loads it from config.js and keeps it in storage), else `_defaultUrl`.
+   */
+  async defaultBase() {
+    try {
+      return (await this._getStorage("polymathDefaultUrl")) || this._defaultUrl;
+    } catch {
+      return this._defaultUrl;
+    }
+  },
   /** Resolve the API base URL from storage or fall back to default. */
   async base() {
     if (this._baseUrl) return this._baseUrl;
@@ -188,6 +200,17 @@ const AlfredAPI = {
         }
         await this._setStorage("alfredUrlMigrated_v2", true);
       }
+      // One-time migration: saving a blank URL used to store the built-in
+      // default itself, so a stored copy of it is "never chose" and follows
+      // the configured default. Saving it again after this keeps it.
+      const followsDefault = await this._getStorage("alfredUrlMigrated_v3");
+      if (!followsDefault) {
+        const old = await this._getStorage("alfredBaseUrl");
+        if (old === this._defaultUrl) {
+          await this._setStorage("alfredBaseUrl", null);
+        }
+        await this._setStorage("alfredUrlMigrated_v3", true);
+      }
       stored = await this._getStorage("alfredBaseUrl");
     } catch {
       // Storage unreadable reads as first run: nothing was configured.
@@ -195,7 +218,8 @@ const AlfredAPI = {
     }
     // A stored URL is a promise the person made to this companion. When it no
     // longer answers as Polymath, say so instead of quietly saving elsewhere.
-    if (stored && stored !== this._defaultUrl) {
+    const fallback = await this.defaultBase();
+    if (stored && stored !== fallback) {
       let reachable = false;
       try {
         // Verify the stored URL is actually Polymath (not another service on
@@ -217,7 +241,7 @@ const AlfredAPI = {
       this._baseUrl = stored;
       return this._baseUrl;
     }
-    this._baseUrl = this._defaultUrl;
+    this._baseUrl = fallback;
     return this._baseUrl;
   },
 
@@ -228,6 +252,14 @@ const AlfredAPI = {
       await this._setStorage("alfredBaseUrl", clean);
     } catch {}
     this._baseUrl = clean;
+  },
+
+  /** Forget the stored URL so the companion follows the default server. */
+  async resetBase() {
+    try {
+      await this._setStorage("alfredBaseUrl", null);
+    } catch {}
+    this._baseUrl = null;
   },
 
   /** The paired bearer token, or null when the companion has not been paired. */

@@ -17,12 +17,21 @@ A Chrome extension that captures text, images, selections, full pages, and quick
 1. Open Chrome and navigate to `chrome://extensions/`
 2. Enable **Developer mode** (toggle in top-right corner)
 3. Click **Load unpacked**
-4. Select the `extensions/chrome/` directory from this repo
+4. Select the `extension/` directory from this repo
 5. The Alfred icon should appear in your extensions toolbar
 
 ## Configuration
 
-The extension connects to `http://localhost:3000` by default (the Polymath dev server). To change this:
+The default server comes from this repo's `.env`, which git ignores:
+
+```bash
+cp .env.example .env        # then set POLYMATH_URL to your Polymath server
+node scripts/extension-config.mjs
+```
+
+The script writes `extension/config.js` (also ignored). Reload the extension in `chrome://extensions/` after running it. Without a `.env` the default is `http://localhost:3000`.
+
+To point one browser somewhere else without touching `.env`:
 
 - Click the Polymath extension icon and update the API Base URL in Settings, or
 - Open the Dashboard (from popup or dock) and go to Settings
